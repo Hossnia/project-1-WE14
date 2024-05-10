@@ -2,10 +2,10 @@
 
 sudo yum update -y
 
-sudo yum install -y httpd.x86_64
+sudo yum install -y httpd
 
-systemctl start httpd.service
+sudo systemctl start httpd
 
-systemctl enable httpd.service
+sudo systemctl enable httpd
 
 echo “Hello World from $(hostname -f)” > /var/www/html/index.html

@@ -15,18 +15,18 @@ resource "aws_internet_gateway" "utc-app-igw" {
 }
 
 resource "aws_subnet" "public_subnet" {
-  count            = 3
-  vpc_id           = aws_vpc.utc-app.id
-  availability_zone = element(["us-east-1a", "us-east-1b", "us-east-1c"], count.index)
-  cidr_block       = "10.10.${16 + 16 * count.index}.0/24"
-  map_public_ip_on_launch = true 
+  count                   = 3
+  vpc_id                  = aws_vpc.utc-app.id
+  availability_zone       = element(["us-east-1a", "us-east-1b", "us-east-1c"], count.index)
+  cidr_block              = "10.10.${16 + 16 * count.index}.0/24"
+  map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "private_subnet" {
-  count            = 6
-  vpc_id           = aws_vpc.utc-app.id
+  count             = 6
+  vpc_id            = aws_vpc.utc-app.id
   availability_zone = element(["us-east-1a", "us-east-1b", "us-east-1c"], count.index % 3) // Adjusted the index calculation
-  cidr_block       = "10.10.${64 + 16 * count.index}.0/24"
+  cidr_block        = "10.10.${64 + 16 * count.index}.0/24"
 }
 
 resource "aws_eip" "nat-eip" {
@@ -48,22 +48,22 @@ resource "aws_route_table" "public_route" {
 }
 
 resource "aws_route_table" "private_route" {
-  count = 2
+  count  = 2
   vpc_id = aws_vpc.utc-app.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.utc-app-nat[count.index].id 
+    gateway_id = aws_nat_gateway.utc-app-nat[count.index].id
   }
 }
 
 resource "aws_route_table_association" "public_route" {
-  count = 3 
+  count          = 3
   route_table_id = aws_route_table.public_route.id
-  subnet_id = aws_subnet.public_subnet[count.index].id
+  subnet_id      = aws_subnet.public_subnet[count.index].id
 }
 
 resource "aws_route_table_association" "private_route" {
-  count = 6
+  count          = 6
   route_table_id = element(aws_route_table.private_route.*.id, floor(count.index / 3))
-  subnet_id = aws_subnet.private_subnet[count.index].id
+  subnet_id      = aws_subnet.private_subnet[count.index].id
 }
